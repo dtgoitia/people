@@ -1,0 +1,20 @@
+[package]
+name = "people"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.31"
+expanduser = "1.2.2"
+glob = "0.3.1"
+regex = "1.10.2"
+serde = { version = "1.0.178", features = ["derive"] }
+serde_yaml = "0.9.25"
+textwrap = "0.16.0"
+tracing = "0.1.40"
+
+
+[profile.release]
+strip = true
