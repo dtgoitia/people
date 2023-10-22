@@ -2,11 +2,8 @@ use std::process;
 
 use tracing::info;
 
-use crate::log::read_logs;
-
-mod config;
-mod log;
-mod model;
+use people::config;
+use people::log;
 
 fn exit_with_error(message: String) -> () {
     println!("ERROR: {}", message);
@@ -22,6 +19,6 @@ fn main() {
         }
     };
 
-    let log = read_logs(config.people_dir);
+    let log = log::read_logs(config.people_dir);
     println!("{log:#?}");
 }

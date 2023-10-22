@@ -18,3 +18,11 @@ tracing = "0.1.40"
 
 [profile.release]
 strip = true
+
+[[bin]]
+name = "people_summarize"
+path = "src/bin/people_summarize.rs"
+
+[[bin]]
+name = "people_per_person"
+path = "src/bin/people_per_person.rs"
