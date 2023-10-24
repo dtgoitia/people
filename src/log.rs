@@ -132,7 +132,7 @@ fn token_is_empty_line(token: &Token) -> bool {
 }
 
 fn parse_people(token: &Token) -> HashSet<Person> {
-    let pattern = r"\#([A-Za-z]+)"; // TODO: make it constant
+    let pattern = r"\#([A-Za-zñáéíóúç]+)"; // TODO: make it constant
     let re = Regex::new(pattern).unwrap();
 
     let people_in_token: HashSet<Person> = re
@@ -328,6 +328,31 @@ mod tests {
                     ],
                 },
             ],
+        };
+
+        assert_eq!(parse_log_file_content(&content), expected);
+    }
+
+    #[test]
+    fn test_support_special_characters() {
+        let content = dedent(
+            r#"
+            # 2000-01-01
+
+            - #Lucía:
+              - stuff: blah
+            "#,
+        );
+
+        let expected = Log {
+            days: vec![Day {
+                date: d("2000-01-01"),
+                entries: vec![Entry {
+                    main: ["Lucía".to_string()].into(),
+                    related: ["Lucía".to_string()].into(),
+                    content: "- #Lucía:\n  - stuff: blah".to_string(),
+                }],
+            }],
         };
 
         assert_eq!(parse_log_file_content(&content), expected);
