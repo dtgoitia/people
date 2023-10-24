@@ -268,6 +268,8 @@ mod tests {
     use pretty_assertions::assert_eq;
     use textwrap::dedent;
 
+    use crate::test_utils::d;
+
     use super::*;
 
     #[test]
@@ -303,7 +305,7 @@ mod tests {
         let expected = Log {
             days: vec![
                 Day {
-                    date: NaiveDate::from_ymd(2000, 1, 1),
+                    date: d("2000-01-01"),
                     entries: vec![Entry {
                         main: ["JohnDoe".to_string()].into(),
                         related: ["JohnDoe".to_string()].into(),
@@ -311,7 +313,7 @@ mod tests {
                     }],
                 },
                 Day {
-                    date: NaiveDate::from_ymd(2000, 1, 2),
+                    date: d("2000-01-02"),
                     entries: vec![
                         Entry {
                             main: ["JohnDoe".to_string()].into(),
