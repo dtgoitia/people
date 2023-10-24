@@ -13,6 +13,7 @@ pretty_assertions = "1.4.0"
 regex = "1.10.2"
 serde = { version = "1.0.178", features = ["derive"] }
 serde_yaml = "0.9.25"
+tabular = "0.2.0"
 textwrap = "0.16.0"
 tracing = "0.1.40"
 

@@ -9,21 +9,21 @@ use chrono::NaiveDate;
 type EntryContent = String;
 
 #[derive(Debug, PartialEq, Eq)]
-struct Entry {
-    main: HashSet<Person>,
+pub struct Entry {
+    pub main: HashSet<Person>,
     related: HashSet<Person>,
     content: EntryContent,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Day {
-    date: NaiveDate,
-    entries: Vec<Entry>,
+pub struct Day {
+    pub date: NaiveDate,
+    pub entries: Vec<Entry>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Log {
-    days: Vec<Day>,
+    pub days: Vec<Day>,
 }
 
 #[derive(Debug, Clone)]
@@ -193,8 +193,7 @@ fn parse_day(date: Date, lines: Vec<Token>) -> Day {
     }
 }
 
-#[allow(unused_assignments)]
-fn parse_log_file_content(content: &str) -> Log {
+pub fn parse_log_file_content(content: &str) -> Log {
     let tokens = tokenize(content);
 
     let mut buffered_date: Option<Date> = None;
@@ -232,7 +231,7 @@ fn parse_log_file_content(content: &str) -> Log {
     Log { days }
 }
 
-fn find_log_files(people_dir: PathBuf) -> Vec<PathBuf> {
+fn find_log_files(people_dir: &PathBuf) -> Vec<PathBuf> {
     let base = people_dir.to_string_lossy();
     let pattern = format!("{base}/log/*people.md");
 
@@ -249,7 +248,7 @@ fn find_log_files(people_dir: PathBuf) -> Vec<PathBuf> {
     return files;
 }
 
-pub fn read_logs(people_dir: PathBuf) -> Log {
+pub fn read_logs(people_dir: &PathBuf) -> Log {
     let mut days: Vec<Day> = vec![];
 
     let files = find_log_files(people_dir);

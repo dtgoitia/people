@@ -272,6 +272,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_yaml",
+ "tabular",
  "textwrap",
  "tracing",
 ]
@@ -432,6 +433,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tabular"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9a2882c514780a1973df90de9d68adcd8871bacc9a6331c3f28e6d2ff91a3d1"
+dependencies = [
+ "unicode-width",
 ]
 
 [[package]]
