@@ -288,6 +288,11 @@ mod tests {
 
             - #JohnDoe :
               - stuff: blah
+
+            # 2000-01-02
+
+            - #JohnDoe :
+              - stuff: blah
               - other: bleh #Bleh
             - #JaneDoe, #Abu :
               - meet at foo
@@ -296,22 +301,33 @@ mod tests {
         );
 
         let expected = Log {
-            days: vec![Day {
-                date: NaiveDate::from_ymd(2000, 1, 1),
-                entries: vec![
-                    Entry {
+            days: vec![
+                Day {
+                    date: NaiveDate::from_ymd(2000, 1, 1),
+                    entries: vec![Entry {
                         main: ["JohnDoe".to_string()].into(),
-                        related: ["JohnDoe".to_string(), "Bleh".to_string()].into(),
-                        content: "- #JohnDoe :\n  - stuff: blah\n  - other: bleh #Bleh".to_string(),
-                    },
-                    Entry {
-                        main: ["JaneDoe".to_string(), "Abu".to_string()].into(),
-                        related: ["JaneDoe".to_string(), "Abu".to_string()].into(),
-                        content: "- #JaneDoe, #Abu :\n  - meet at foo\n    - nested stuff"
-                            .to_string(),
-                    },
-                ],
-            }],
+                        related: ["JohnDoe".to_string()].into(),
+                        content: "- #JohnDoe :\n  - stuff: blah".to_string(),
+                    }],
+                },
+                Day {
+                    date: NaiveDate::from_ymd(2000, 1, 2),
+                    entries: vec![
+                        Entry {
+                            main: ["JohnDoe".to_string()].into(),
+                            related: ["JohnDoe".to_string(), "Bleh".to_string()].into(),
+                            content: "- #JohnDoe :\n  - stuff: blah\n  - other: bleh #Bleh"
+                                .to_string(),
+                        },
+                        Entry {
+                            main: ["JaneDoe".to_string(), "Abu".to_string()].into(),
+                            related: ["JaneDoe".to_string(), "Abu".to_string()].into(),
+                            content: "- #JaneDoe, #Abu :\n  - meet at foo\n    - nested stuff"
+                                .to_string(),
+                        },
+                    ],
+                },
+            ],
         };
 
         assert_eq!(parse_log_file_content(&content), expected);
