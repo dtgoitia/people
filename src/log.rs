@@ -211,7 +211,6 @@ fn parse_log_file_content(content: &str) -> Log {
                     );
                     days.push(day);
 
-                    buffered_date = None;
                     buffered_lines = vec![];
                 }
                 buffered_date = Some(date);
