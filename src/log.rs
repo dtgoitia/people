@@ -10,7 +10,8 @@ type EntryContent = String;
 
 #[derive(Debug, PartialEq, Eq)]
 struct Entry {
-    people: HashSet<Person>,
+    main: HashSet<Person>,
+    related: HashSet<Person>,
     content: EntryContent,
 }
 
@@ -114,7 +115,7 @@ fn tokenize_line(line: String, line_number: usize) -> Token {
     token
 }
 
-fn tokenize(content: String) -> Vec<Token> {
+fn tokenize(content: &str) -> Vec<Token> {
     let lines = content.split("\n");
 
     let mut tokens: Vec<Token> = vec![];
@@ -130,18 +131,31 @@ fn token_is_empty_line(token: &Token) -> bool {
     token.indentation == 0 && token.content.is_empty()
 }
 
-fn parse_entry(tokens: Vec<Token>) -> Entry {
+fn parse_people(token: &Token) -> HashSet<Person> {
     let pattern = r"\#([A-Za-z]+)"; // TODO: make it constant
     let re = Regex::new(pattern).unwrap();
 
+    let people_in_token: HashSet<Person> = re
+        .captures_iter(&token.content)
+        .map(|cap| cap[1].to_string())
+        .collect();
+
     let mut people: HashSet<Person> = HashSet::new();
+    people.extend(people_in_token);
+
+    people
+}
+
+fn parse_entry(tokens: Vec<Token>) -> Entry {
+    let first_token = &tokens[0];
+    let main: HashSet<Person> = parse_people(first_token);
+
+    let mut related: HashSet<Person> = HashSet::new();
     let mut content_lines: Vec<String> = vec![];
+
     for token in tokens {
-        let people_in_token: HashSet<Person> = re
-            .captures_iter(&token.content)
-            .map(|cap| cap[1].to_string())
-            .collect();
-        people.extend(people_in_token);
+        let people_in_token = parse_people(&token);
+        related.extend(people_in_token);
 
         let indendation = " ".repeat(token.indentation);
         let content_line = vec![indendation, token.content].join("");
@@ -149,7 +163,8 @@ fn parse_entry(tokens: Vec<Token>) -> Entry {
     }
 
     Entry {
-        people,
+        main,
+        related,
         content: dedent(&content_lines.join("\n")),
     }
 }
@@ -179,7 +194,7 @@ fn parse_day(date: Date, lines: Vec<Token>) -> Day {
 }
 
 #[allow(unused_assignments)]
-fn parse_log_file_content(content: String) -> Log {
+fn parse_log_file_content(content: &str) -> Log {
     let tokens = tokenize(content);
 
     let mut buffered_date: Option<Date> = None;
@@ -241,7 +256,7 @@ pub fn read_logs(people_dir: PathBuf) -> Log {
     let files = find_log_files(people_dir);
     for path in files {
         let content = fs::read_to_string(&path).unwrap();
-        let log = parse_log_file_content(content);
+        let log = parse_log_file_content(&content);
         days.extend(log.days);
     }
 
@@ -273,26 +288,25 @@ mod tests {
 
             - #JohnDoe :
               - stuff: blah
-              - other: bleh
+              - other: bleh #Bleh
             - #JaneDoe, #Abu :
               - meet at foo
                 - nested stuff
             "#,
-        )
-        .to_string();
+        );
 
         let expected = Log {
             days: vec![Day {
                 date: NaiveDate::from_ymd(2000, 1, 1),
                 entries: vec![
                     Entry {
-                        people: vec!["JohnDoe".to_string()].into_iter().collect(),
-                        content: "- #JohnDoe :\n  - stuff: blah\n  - other: bleh".to_string(),
+                        main: ["JohnDoe".to_string()].into(),
+                        related: ["JohnDoe".to_string(), "Bleh".to_string()].into(),
+                        content: "- #JohnDoe :\n  - stuff: blah\n  - other: bleh #Bleh".to_string(),
                     },
                     Entry {
-                        people: vec!["JaneDoe".to_string(), "Abu".to_string()]
-                            .into_iter()
-                            .collect(),
+                        main: ["JaneDoe".to_string(), "Abu".to_string()].into(),
+                        related: ["JaneDoe".to_string(), "Abu".to_string()].into(),
                         content: "- #JaneDoe, #Abu :\n  - meet at foo\n    - nested stuff"
                             .to_string(),
                     },
@@ -300,6 +314,6 @@ mod tests {
             }],
         };
 
-        assert_eq!(parse_log_file_content(content), expected);
+        assert_eq!(parse_log_file_content(&content), expected);
     }
 }
