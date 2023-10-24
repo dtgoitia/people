@@ -250,6 +250,7 @@ pub fn read_logs(people_dir: PathBuf) -> Log {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
     use textwrap::dedent;
 
     use super::*;
