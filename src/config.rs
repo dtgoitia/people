@@ -105,6 +105,7 @@ pub fn get_config() -> Result<Config, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_parse_config_with_ignore() {
@@ -134,6 +135,23 @@ mod tests {
         let expected = Ok(ConfigFile {
             people_dir: Box::new(Path::new("~/people").to_path_buf()),
             ignore: None,
+        });
+
+        assert_eq!(parse_config(config_file_content), expected);
+    }
+
+    #[test]
+    fn test_parse_config_with_special_characters() {
+        let config_file_content = r#"
+        people_dir: ~/people
+        ignore:
+          - Lucía
+        "#
+        .to_string();
+
+        let expected = Ok(ConfigFile {
+            people_dir: Box::new(Path::new("~/people").to_path_buf()),
+            ignore: Some(vec!["Lucía".to_string()]),
         });
 
         assert_eq!(parse_config(config_file_content), expected);
