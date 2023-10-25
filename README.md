@@ -27,4 +27,4 @@ make set_up_repo_for_development
 - [x] Support config file
 - [x] Write logic to parse log file
 - [x] Add binary to show people summary
-- [ ] Add binary to group interactions by person
+- [x] Add binary to group interactions by person
