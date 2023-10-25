@@ -1,3 +1,4 @@
+use core::fmt;
 use glob::glob;
 use regex::Regex;
 use std::{collections::HashSet, fs, path::PathBuf};
@@ -14,8 +15,14 @@ type EntryContent = String;
 #[derive(Debug, PartialEq, Eq)]
 pub struct Entry {
     pub main: HashSet<Person>,
-    related: HashSet<Person>,
-    content: EntryContent,
+    pub related: HashSet<Person>,
+    pub content: EntryContent,
+}
+
+impl fmt::Display for Entry {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.content)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -24,9 +31,27 @@ pub struct Day {
     pub entries: Vec<Entry>,
 }
 
+impl fmt::Display for Day {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let date = self.date;
+        let entries: Vec<String> = self.entries.iter().map(|entry| entry.to_string()).collect();
+        let fmt_entries = entries.join("\n");
+        let content = format!("# {date}\n\n{fmt_entries}");
+        write!(f, "{content}")
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct Log {
     pub days: Vec<Day>,
+}
+
+impl fmt::Display for Log {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let days: Vec<String> = self.days.iter().map(|day| day.to_string()).collect();
+        let content = days.join("\n\n");
+        write!(f, "{content}\n")
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -386,5 +411,33 @@ mod tests {
         };
 
         assert_eq!(parse_log_file_content(&content), expected);
+    }
+
+    #[test]
+    fn test_display_log() {
+        let content = indoc!(
+            "
+            # 2000-01-01
+
+            - #JohnDoe :
+              - stuff: blah
+
+            # 2000-01-02
+
+            - #JohnDoe :
+              - stuff: blah
+              - other: bleh #Bleh
+            - #JaneDoe, #Abu :
+              - meet at foo
+                - nested stuff
+            "
+        );
+
+        let log = parse_log_file_content(&content);
+        let formatted = format!("{log}");
+        println!("\n{content:#?}");
+        println!("\n{formatted:#?}");
+
+        assert_eq!(formatted, content);
     }
 }
