@@ -12,11 +12,6 @@ use tracing::info;
 use chrono::Local;
 use tabular::{Row, Table};
 
-fn exit_with_error(message: String) -> () {
-    println!("ERROR: {}", message);
-    process::exit(1);
-}
-
 fn discard_ignored(
     interactions: Vec<LastInteraction>,
     config: &config::Config,
@@ -138,7 +133,8 @@ fn main() {
     let config = match config::get_config() {
         Ok(config) => config,
         Err(reason) => {
-            return exit_with_error(reason);
+            eprintln!("ERROR: {}", reason);
+            process::exit(1);
         }
     };
 
