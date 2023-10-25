@@ -16,6 +16,12 @@ pub struct Config {
     pub ignore: Vec<Person>,
 }
 
+impl Config {
+    pub fn get_per_person_dir(&self) -> PathBuf {
+        self.people_dir.join("per-person-logs")
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 struct ConfigFile {
     pub people_dir: Box<PathBuf>,
