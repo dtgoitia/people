@@ -12,7 +12,7 @@ static TWO_SPACES: &str = "  ";
 
 type EntryContent = String;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Entry {
     pub main: HashSet<Person>,
     pub related: HashSet<Person>,
