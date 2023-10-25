@@ -6,6 +6,9 @@ use textwrap::dedent;
 use crate::model::Person;
 use chrono::NaiveDate;
 
+static TAB: &str = "	";
+static TWO_SPACES: &str = "  ";
+
 type EntryContent = String;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -103,8 +106,9 @@ fn find_first_non_space(input: &str) -> usize {
 }
 
 fn tokenize_line(line: String, line_number: usize) -> Token {
-    let indentation = find_first_non_space(&line);
-    let content = &line[indentation..];
+    let line_no_tabs = line.replace(TAB, TWO_SPACES);
+    let indentation = find_first_non_space(&line_no_tabs);
+    let content = &line_no_tabs[indentation..];
 
     let token = Token {
         line_number,
@@ -341,6 +345,32 @@ mod tests {
 
             - #Lucía:
               - stuff: blah
+            "#,
+        );
+
+        let expected = Log {
+            days: vec![Day {
+                date: d("2000-01-01"),
+                entries: vec![Entry {
+                    main: ["Lucía".to_string()].into(),
+                    related: ["Lucía".to_string()].into(),
+                    content: "- #Lucía:\n  - stuff: blah".to_string(),
+                }],
+            }],
+        };
+
+        assert_eq!(parse_log_file_content(&content), expected);
+    }
+
+    #[test]
+    fn test_replace_tabs_with_two_spaces() {
+        // NOTE: there is a tab immediately before `- stuff: blah`
+        let content = dedent(
+            r#"
+            # 2000-01-01
+
+            - #Lucía:
+            	- stuff: blah
             "#,
         );
 
