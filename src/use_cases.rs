@@ -52,8 +52,8 @@ pub fn get_last_interactions(log: &Log) -> Vec<LastInteraction> {
 mod tests {
     use super::*;
     use crate::{log, test_utils::d};
+    use indoc::indoc;
     use pretty_assertions::assert_eq;
-    use textwrap::dedent;
 
     fn sort_to_compare(summary: Vec<LastInteraction>) -> Vec<LastInteraction> {
         let mut copy = summary.clone();
@@ -63,8 +63,8 @@ mod tests {
 
     #[test]
     fn test_get_last_interactions() {
-        let log = log::parse_log_file_content(&dedent(
-            r#"
+        let log = log::parse_log_file_content(indoc!(
+            "
             # 2000-01-01
 
             - #JohnDoe :
@@ -78,7 +78,7 @@ mod tests {
             - #JaneDoe, #Abu :
               - meet at foo
                 - nested stuff
-            "#,
+            ",
         ));
 
         let summary = get_last_interactions(&log);

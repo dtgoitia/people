@@ -267,8 +267,8 @@ pub fn read_logs(people_dir: &PathBuf) -> Log {
 
 #[cfg(test)]
 mod tests {
+    use indoc::indoc;
     use pretty_assertions::assert_eq;
-    use textwrap::dedent;
 
     use crate::test_utils::d;
 
@@ -286,8 +286,8 @@ mod tests {
 
     #[test]
     fn test_parse_log_file() {
-        let content = dedent(
-            r#"
+        let content = indoc!(
+            "
             # 2000-01-01
 
             - #JohnDoe :
@@ -301,7 +301,7 @@ mod tests {
             - #JaneDoe, #Abu :
               - meet at foo
                 - nested stuff
-            "#,
+            "
         );
 
         let expected = Log {
@@ -339,13 +339,13 @@ mod tests {
 
     #[test]
     fn test_support_special_characters() {
-        let content = dedent(
-            r#"
+        let content = indoc!(
+            "
             # 2000-01-01
 
             - #Lucía:
               - stuff: blah
-            "#,
+            ",
         );
 
         let expected = Log {
@@ -365,13 +365,13 @@ mod tests {
     #[test]
     fn test_replace_tabs_with_two_spaces() {
         // NOTE: there is a tab immediately before `- stuff: blah`
-        let content = dedent(
-            r#"
+        let content = indoc!(
+            "
             # 2000-01-01
 
             - #Lucía:
             	- stuff: blah
-            "#,
+            "
         );
 
         let expected = Log {
