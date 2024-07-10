@@ -4,7 +4,7 @@ use regex::Regex;
 use std::{collections::HashSet, fs, path::PathBuf};
 use textwrap::dedent;
 
-use crate::model::Person;
+use crate::model::PersonName;
 use chrono::NaiveDate;
 
 static TAB: &str = "	";
@@ -14,8 +14,8 @@ type EntryContent = String;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Entry {
-    pub main: HashSet<Person>,
-    pub related: HashSet<Person>,
+    pub main: HashSet<PersonName>,
+    pub related: HashSet<PersonName>,
     pub content: EntryContent,
 }
 
@@ -160,16 +160,16 @@ fn token_is_empty_line(token: &Token) -> bool {
     token.indentation == 0 && token.content.is_empty()
 }
 
-fn parse_people(token: &Token) -> HashSet<Person> {
+fn parse_people(token: &Token) -> HashSet<PersonName> {
     let pattern = r"\#([A-Za-zñáéíóúç]+)"; // TODO: make it constant
     let re = Regex::new(pattern).unwrap();
 
-    let people_in_token: HashSet<Person> = re
+    let people_in_token: HashSet<PersonName> = re
         .captures_iter(&token.content)
         .map(|cap| cap[1].to_string())
         .collect();
 
-    let mut people: HashSet<Person> = HashSet::new();
+    let mut people: HashSet<PersonName> = HashSet::new();
     people.extend(people_in_token);
 
     people
@@ -177,9 +177,9 @@ fn parse_people(token: &Token) -> HashSet<Person> {
 
 fn parse_entry(tokens: Vec<Token>) -> Entry {
     let first_token = &tokens[0];
-    let main: HashSet<Person> = parse_people(first_token);
+    let main: HashSet<PersonName> = parse_people(first_token);
 
-    let mut related: HashSet<Person> = HashSet::new();
+    let mut related: HashSet<PersonName> = HashSet::new();
     let mut content_lines: Vec<String> = vec![];
 
     for token in tokens {

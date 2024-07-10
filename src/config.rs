@@ -6,14 +6,16 @@ use std::path::PathBuf;
 use serde::Deserialize;
 use tracing::{debug, info};
 
-use crate::model::Person;
+use crate::model::DurationStr;
+use crate::model::{Location, PersonName, Theme};
 
 const CONFIG_PATH: &str = ".config/people/config.yaml";
 
 #[derive(Debug, Clone)]
 pub struct Config {
     pub people_dir: PathBuf,
-    pub ignore: Vec<Person>,
+    pub ignore: Vec<PersonName>,
+    pub people: Vec<Person>,
 }
 
 impl Config {
@@ -23,9 +25,18 @@ impl Config {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq)]
+pub struct Person {
+    pub name: PersonName,
+    pub location: Location,
+    pub themes: Vec<Theme>,
+    pub remind_after: Option<DurationStr>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 struct ConfigFile {
     pub people_dir: Box<PathBuf>,
-    pub ignore: Option<Vec<Person>>,
+    pub ignore: Option<Vec<PersonName>>,
+    pub people: Option<Vec<Person>>,
 }
 
 type ErrorReason = String;
@@ -93,7 +104,7 @@ pub fn get_config() -> Result<Config, String> {
         }
     };
 
-    let ignore: Vec<Person> = match config_file.ignore {
+    let ignore: Vec<PersonName> = match config_file.ignore {
         Some(people) => people,
         None => vec![],
     };
@@ -103,7 +114,16 @@ pub fn get_config() -> Result<Config, String> {
         Err(reason) => return Err(reason.to_string()),
     };
 
-    let config = Config { people_dir, ignore };
+    let people: Vec<Person> = match config_file.people {
+        Some(people) => people,
+        None => vec![],
+    };
+
+    let config = Config {
+        people_dir,
+        ignore,
+        people,
+    };
 
     Ok(config)
 }
@@ -126,6 +146,7 @@ mod tests {
         let expected = Ok(ConfigFile {
             people_dir: Box::new(Path::new("~/people").to_path_buf()),
             ignore: Some(vec!["JohnDoe".to_string(), "JaneDoe".to_string()]),
+            people: None,
         });
 
         assert_eq!(parse_config(config_file_content), expected);
@@ -141,6 +162,7 @@ mod tests {
         let expected = Ok(ConfigFile {
             people_dir: Box::new(Path::new("~/people").to_path_buf()),
             ignore: None,
+            people: None,
         });
 
         assert_eq!(parse_config(config_file_content), expected);
@@ -158,6 +180,37 @@ mod tests {
         let expected = Ok(ConfigFile {
             people_dir: Box::new(Path::new("~/people").to_path_buf()),
             ignore: Some(vec!["Lucía".to_string()]),
+            people: None,
+        });
+
+        assert_eq!(parse_config(config_file_content), expected);
+    }
+
+    #[test]
+    fn test_parse_config_with_people() {
+        let config_file_content = r#"
+        people_dir: ~/people
+        ignore:
+          - Lucía
+        people:
+          - name: FooBar
+            location: Here
+            themes:
+              - painting
+              - uni
+            remind_after: 3 months
+        "#
+        .to_string();
+
+        let expected = Ok(ConfigFile {
+            people_dir: Box::new(Path::new("~/people").to_path_buf()),
+            ignore: Some(vec!["Lucía".to_string()]),
+            people: Some(vec![Person {
+                name: "FooBar".to_string(),
+                location: "Here".to_string(),
+                themes: vec!["painting".to_string(), "uni".to_string()],
+                remind_after: Some("3 months".to_string()),
+            }]),
         });
 
         assert_eq!(parse_config(config_file_content), expected);

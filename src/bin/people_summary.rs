@@ -4,7 +4,7 @@ use std::process;
 use people::config;
 use people::log;
 use people::model::DaysAgo;
-use people::model::Person;
+use people::model::PersonName;
 use people::use_cases;
 use people::use_cases::LastInteraction;
 use tracing::info;
@@ -16,7 +16,7 @@ fn discard_ignored(
     interactions: Vec<LastInteraction>,
     config: &config::Config,
 ) -> Vec<LastInteraction> {
-    let mut ignored: HashSet<Person> = HashSet::new();
+    let mut ignored: HashSet<PersonName> = HashSet::new();
     for person in &config.ignore {
         ignored.insert(person.clone());
     }
@@ -99,15 +99,20 @@ fn format_last_interactions(interactions: Vec<LastInteraction>) -> String {
     sorted_interactions.sort_by_key(|interaction| interaction.last);
     sorted_interactions.reverse();
 
-    let mut table = Table::new("{:>}  {:<}  {:<}");
+    let mut table = Table::new("{:>}  {:<}  {:<}    {:<}");
     table.add_row(
         Row::new()
             .with_cell("Days ago")
             .with_cell("PERSON")
-            .with_cell("LAST"),
+            .with_cell("LAST")
+            .with_cell("reach out"),
     );
 
-    let empty_row = Row::new().with_cell("").with_cell("").with_cell("");
+    let empty_row = Row::new()
+        .with_cell("")
+        .with_cell("")
+        .with_cell("")
+        .with_cell("");
 
     let mut spacer = Spacer::new(vec![7, 14, 28]);
 
@@ -117,11 +122,17 @@ fn format_last_interactions(interactions: Vec<LastInteraction>) -> String {
             table.add_row(empty_row.clone());
         }
 
+        let mut reach_out: String = "".to_string();
+        if let Some(days_to_reminder) = interaction.days_beyond_reachout_threshold {
+            reach_out = format!("{days_to_reminder} days ago");
+        }
+
         table.add_row(
             Row::new()
                 .with_cell(ago)
                 .with_cell(interaction.person)
-                .with_cell(interaction.last),
+                .with_cell(interaction.last)
+                .with_cell(reach_out),
         );
     }
 
@@ -140,8 +151,15 @@ fn main() {
 
     let log = log::read_logs(&config.people_dir);
 
-    let all = use_cases::get_last_interactions(&log);
-    let desired = discard_ignored(all, &config);
+    let all_without_reminders = use_cases::get_last_interactions(&log);
+    let all_with_reminders = match use_cases::identify_reachouts(all_without_reminders, &config) {
+        Ok(r) => r,
+        Err(reason) => {
+            eprintln!("{reason}");
+            process::exit(2);
+        }
+    };
+    let desired = discard_ignored(all_with_reminders, &config);
     let summary = format_last_interactions(desired);
     println!("{summary}");
 }
